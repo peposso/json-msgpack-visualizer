@@ -1,6 +1,9 @@
 JSON or MessagePack visualizer
 ======================
 
+online demo: https://peposso.github.io/json-msgpack-visualizer/
+
+
 forked from https://github.com/pistatium/json_dump
 
 
