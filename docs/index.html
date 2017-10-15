@@ -284,7 +284,7 @@ let $hide = function(el) {
 };
 
 let $toggle = function(el) {
-  el = $q(sel);
+  el = $q(el);
   let display = el._display || getComputedStyle(el).display;
   el._display = display;
   if (display == 'none') {
