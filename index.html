@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>JSON or MessagePack visualizer</title>
+<style>
+textarea {
+  overflow: auto;
+  vertical-align: top;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  border: #ccc 4px solid;
+  padding-left: 5px;
+  border-radius: 10px;
+  background: #fcfcfc;
+  display: inline-block;
+  padding: 4px 6px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #555555;
+  border-radius: 4px;
+  vertical-align: middle;
+}
+body {
+  margin: 0;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 13px;
+  line-height: 18px;
+  color: #333333;
+  background-color: #ffffff;
+  border-top: 10px solid #9CCCCC;
+  padding:10px;
+}
+
+p {
+  line-height:160%;
+  margin-left:10px;
+}
+textarea {
+  border:#ccc 4px solid;
+  padding-left:5px;
+  margin-left:10px;
+  border-radius: 10px;
+  background:#fcfcfc;
+}
+.indent {
+  margin: 0px 0 10px 20px;
+  padding: 5px 10px;
+  border-left:3px solid #CCCEB4;
+}
+.indent > .indent {
+  margin: 0px 0 10px 20px;
+  padding: 5px 10px;
+  border-left:3px solid #B4CEB8;
+}
+.indent > .indent > .indent {
+  margin: 0px 0 10px 20px;
+  padding: 5px 10px;
+  border-left:3px solid #B4C8CE;
+}
+.indent > .indent > .indent > .indent{
+  margin: 0px 0 10px 20px;
+  padding: 5px 10px;
+  border-left:3px solid #B9B4CE;
+}
+.indent > .indent > .indent > .indent > .indent {
+  margin: 0px 0 10px 20px;
+  padding: 5px 10px;
+  border-left:3px solid #CEB4C0;
+}
+.key {
+  width: 1px;
+  font-weight:bold;
+  line-height:100%;
+  padding: 5px 10px 5px 0;
+  text-align: left;
+  position: relative;
+}
+.key:after {
+  content: ":";
+  position: absolute;
+  right: 0;
+}
+.key:hover {
+  background: #ffd;
+}
+.val {
+  padding-left: 10px;
+  margin-right: 10px;
+  text-align: left;
+}
+.place {
+  font-size:90%;
+  color:#50A580;
+  line-height:100%;
+  display:inline-block;
+  margin: 5px 20px;
+  text-decoration: underline;
+  border:0px dashed;
+  width:350px;
+}
+.noval {
+  color: #8A8A4E !important;
+}
+.array{
+  color: #A55061 !important;
+  padding: 0 10px;
+  cursor: pointer;
+}
+
+#json-source {
+  padding: 10px;
+  width: 80%;
+  height: 400px;
+}
+
+#description {
+  margin-left:10px;
+  padding:10px;
+  border-left: 5px solid #9CCCCC;
+  width:660px; float:left;
+}
+
+.json-type {
+  color: #A55061 !important;
+  display: inline-block;
+  font-size: 7px;
+  padding: 1px 2px;
+  margin: 2px 4px 2px 0;
+  font-weight: normal;
+}
+.btn {
+  display: inline-block;
+  padding: 4px 10px 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #333333;
+  text-align: center;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+  background-color: #fafafa;
+  background-image: linear-gradient(#ffffff, #ffffff 25%, #e6e6e6);
+  background-repeat: no-repeat;
+  border: 1px solid #ccc;
+  border-bottom-color: #bbb;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 1px 2px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  *margin-left: .3em;
+}
+.btn:focus {
+  outline: thin dotted;
+  outline: 5px auto -webkit-focus-ring-color;
+  outline-offset: -2px;
+}
+.btn.active, .btn:active {
+  background-image: none;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(0, 0, 0, 0.05);
+  background-color: #e6e6e6;
+  background-color: #d9d9d9 \9;
+  color: rgba(0, 0, 0, 0.5);
+  outline: 0;
+}
+.btn-primary {
+  color: rgba(255, 255, 255, 0.75);
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+  background: transparent;
+  background-color: #006dcc;
+  background-image: linear-gradient(top, #0088cc, #0044cc);
+  background-repeat: repeat-x;
+  border-color: #0044cc #0044cc #002a80;
+}
+.csv {
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.csv th, 
+.csv td {
+  border: 1px solid #e1edff;
+  padding: 7px 17px;
+}
+
+.csv th {
+  background-color: #508abb;
+  color: #FFFFFF;
+  border-color: #6ea1cc !important;
+}
+
+/* Table Body */
+.csv tbody td {
+  color: #353535;
+}
+.csv tbody td:first-child,
+.csv tbody td:last-child,
+.csv tbody td:nth-child(4) {
+  text-align: right;
+}
+.csv tbody tr:nth-child(odd) td {
+  background-color: #f4fbff;
+}
+.csv tbody tr:hover td {
+  background-color: #ffffa2;
+  border-color: #ffff0f;
+  transition: all .2s;
+}
+</style>
+</head>
+<body>
+<div class="container-fluid">
+  <div class="span12">
+    <p class="tab-bar">
+      <a class="btn btn-primary" data-tab-content="#tab-source">Source</a>
+      <a class="btn" data-tab-content="#tab-tree">Tree</a>
+      <a class="btn" data-tab-content="#tab-table">Table</a>
+    </p>
+  </div>
+  <div id="tab-source">
+    <textarea class="span12" id="json-source" placeholder="Paste or drop JSON/MessagePack here."></textarea>
+  </div>
+  <div id="tab-tree">
+    <div id="tree-result"></div>
+  </div>
+  <div id="tab-table">
+    <div id="table-result"></div>
+  </div>
+  <script src="msgpack.js"></script>
+</div>
+<script>
+let $doc = document;
+let $root = document.documentElement;
+let $q = function(sel, parent) {
+  if (typeof sel !== 'string') return sel;
+  return (parent || document).querySelector(sel);
+};
+let $qa = function(sel, parent) {
+  if (typeof sel !== 'string') return sel;
+  return Array.prototype.slice.call((parent || document).querySelectorAll(sel));
+};
+let $on = function(sel, ev, listener, cap) {
+  $q(sel).addEventListener(ev, listener, cap);
+};
+
+let $tween = function(startValue, endValue, duration, update, finish) {
+  if (arguments.length <= 3) {
+    return $tween(0, 1, arguments[0], arguments[1], arguments[2]);
+  }
+  let startAt = null;
+  let tick = function(ts) {
+    if (!startAt) startAt = ts;
+    let ratio = (ts - startAt) / duration;
+    if (ratio > 1) {
+      (finish || update)(endValue);
+    } else {
+      update((endValue - startValue) * ratio + startValue);
+      requestAnimationFrame(tick);
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
+let $show = function(el) {
+  el = $q(el);
+  let display = el._display || getComputedStyle(el).display;
+  el._display = display;
+  if (display != 'none') return;
+  el._display = el._beforeDisplay || 'block';
+  el.style.display = el._display;
+  let height = parseInt(getComputedStyle(el).height);
+  $tween(100, v => {
+    el.style.opacity = v;
+    el.style.height = height * v + 'px';
+  }, () => {
+    el.style.opacity = null;
+    el.style.height = null;
+  });
+};
+
+let $hide = function(el) {
+  el = $q(el);
+  let display = el._display || getComputedStyle(el).display;
+  el._display = display;
+  if (display == 'none') return;
+  el._display = 'none';
+  el.style.display = el._display
+};
+
+let $toggle = function(el) {
+  el = $q(sel);
+  let display = el._display || getComputedStyle(el).display;
+  el._display = display;
+  if (display == 'none') {
+    $show(el);
+    return true;
+  } else {
+    $hide(el);
+    return false;
+  }
+};
+
+let _manip = function(next, orself) {
+  return function(el, pred) {
+    el = $q(el);
+    if (typeof pred === 'string') {
+      let sel = pred;
+      pred = function (el) {
+        return el.matches && el.matches(sel);
+      };
+    }
+    if (!orself) el = next(el);
+    while (el) {
+      if (pred(el)) return el;
+      el = next(el);
+    }
+  };
+};
+
+let $parent = _manip(el => el.parentNode, true);
+let $next = _manip(el => el.nextSibling);
+
+$on($root, 'click', function(ev) {
+  let tr = $parent(ev.target, 'tr');
+  if (!tr) return;
+  let next = $next(tr, 'tr');
+  if (!next) return;
+  let el = $q('.indent', next);
+  if (!el) return;
+  $q('.array-close', tr).style.display = $toggle(el) ? 'none' : null;
+});
+
+$on($root, 'click', function(ev) {
+  let btn = $parent(ev.target, '.btn');
+  if (!btn) return;
+  let bar = $parent(btn, '.tab-bar');
+  if (!bar) return;
+  $q('.btn-primary', bar).classList.remove('btn-primary');
+  btn.classList.add('btn-primary');
+  refreshTab();
+});
+
+let refreshTab = function() {
+  $qa('.tab-bar').forEach(function(bar) {
+    $qa('.btn', bar).forEach(function(b) {
+      let sel = b.getAttribute('data-tab-content');
+      let c = $q(sel);
+      if (b.classList.contains('btn-primary')) {
+        $show(c);
+      } else {
+        $hide(c);
+      }
+    });
+  });
+};
+
+$on($root, 'dragover', function(ev) {
+  ev.stopPropagation();
+  ev.preventDefault();
+}, true);
+
+let visualize = function(text) {
+  if (!text) return;
+  let obj;
+  let formatted;
+  try {
+    obj = JSON.parse(text);
+    formatted = JSON.stringify(obj, null, 4);
+  } catch(e) { }
+  $q("#json-source").value = formatted || text;
+  let treeResult = $q("#tree-result");
+  let tableResult = $q("#table-result");
+  if (obj) {
+    treeResult.innerHTML = makeHtml(obj);
+    tableResult.innerHTML = makeHtml(obj, {isTable: true});
+  } else {
+    treeResult.innerHTML = 'parse error';
+    tableResult.innerHTML = 'parse error';
+  }
+};
+
+$on($root, 'drop', function(ev) {
+  ev.stopPropagation();
+  ev.preventDefault();
+  let file = ev.dataTransfer.files[0];
+  let reader = new FileReader();
+  console.log(file);
+  if (file.type == '') {
+    reader.onload = function(e) {
+      let buf = new Uint8Array(reader.result);
+      let o = msgpack.decode(buf);
+      console.log(o);
+      visualize(JSON.stringify(o));
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    reader.onload = function(e) {
+      let text = e.target.result;
+      visualize(text);
+    };
+    reader.readAsText(file);
+  }
+}, true);
+
+let beforeRawValue = '';
+$on("#json-source", 'input', function() {
+  let val = $q("#json-source").value;
+  if (val !== beforeRawValue) {
+    beforeRawValue = val;
+    visualize(val);
+  }
+});
+
+let makeHtml = function(obj, opt) {
+  return "<table class='indent'><tr><th class='key'>ROOT</th>" + _make(obj, "", opt) + "</tr></table>";
+}
+
+let _makeType = function(obj) {
+  if (obj === null) {
+    return "<span class='json-type'>&lt;null&gt;</span>";
+  } else if (obj === undefined) {
+    return "<span class='json-type'>&lt;undefined&gt;</span>";
+  } else if (typeof obj == 'object' && typeof obj.length === "number") {
+    return "<span class='json-type'>&lt;array&gt;</span>";
+  } else if (typeof obj == 'object') {
+    return "<span class='json-type'>&lt;object&gt;</span>";
+  } else if (typeof obj == 'number') {
+    return "<span class='json-type'>&lt;number&gt;</span>";
+  } else if (typeof obj == 'boolean') {
+    return "<span class='json-type'>&lt;boolean&gt;</span>";
+  } else if (typeof obj == 'string') {
+    return "<span class='json-type'>&lt;string&gt;</span>";
+  }
+  return "<span class='json-type'>?</span>";
+};
+
+let _rkeys = function(obj) {
+  let rkeys = [];
+  let keys = Object.keys(obj);
+  for (let i = 0; i < keys.length; ++i) {
+    let key = keys[i];
+    let val = obj[key];
+    if (val !== null && typeof val === 'object') {
+      _rkeys(val).forEach(function(k) {
+        rkeys.push(key + "." + k);
+      });
+    } else {
+      rkeys.push(key);
+    }
+  }
+  console.log(rkeys);
+  return rkeys;
+};
+
+let _makeTable = function(arr) {
+  if (arr.length === 0) {
+    let tmp = "<td class='val array'>"
+            + _makeType(obj)
+            + "[] 0 items"
+            + "</td>";
+    return tmp;
+  }
+  let f = arr[0];
+  if (typeof f !== 'object') {
+    let tmp = "<td class='val array'>"
+            + _makeType(arr)
+            + "[<span class='array-close' style='display:none'>...] "
+            + arr.length
+            + " items</span>"
+            + "</td><tr><td colspan='2'><table class='indent csv'>";
+    tmp += "<tr><th>index</th><th>value</th></tr>";
+    for (let i = 0; i < arr.length; ++i) {
+      tmp += "<tr><th>"
+           + i
+           + "</th><td>" 
+           + arr[i]
+           + "</td>";
+    }
+    return tmp + "</table></td>";
+  }
+  let tmp = "<td class='val array'>"
+          + _makeType(arr)
+          + "&nbsp;[<span class='array-close' style='display:none'>...] "
+          + arr.length
+          + " items</span>"
+          + "</td><tr><td colspan='2'><table class='indent csv'>";
+  if (typeof f.length === 'number') {
+    let max = -1;
+    for (let j = 0; j < arr.length; ++j) {
+      let row = arr[j];
+      if (!row || typeof row.length !== 'number') {
+        row = [row];
+        arr[j] = row;
+      }
+      if (max < row.length) {
+        max = row.length;
+      }
+    }
+    let headIndex = -1;
+    for (let j = 0; j < 4; ++j) {
+      let row = arr[j];
+      if (!row) {
+        break;
+      }
+      if (row.every(function(c) { return typeof c === 'string'; })) {
+        headIndex = j;
+      }
+    }
+    for (let j = 0; j < arr.length; ++j) {
+      tmp += "<tr>";
+      for (let i = 0; i < max; ++i) {
+        if (j <= headIndex) {
+          tmp += "<th>" + arr[j][i] + "</th>";
+        } else {
+          tmp += "<td>" + arr[j][i] + "</td>";
+        }
+      }
+      tmp += "</tr>";
+    }
+    return tmp + "</table></td>";
+  }
+  let keys = [];
+  for (let j = 0; j < arr.length; ++j) {
+    if (arr[j] === null || typeof arr[j] !== 'object') continue;
+    _rkeys(arr[j]).forEach(function (k) {
+      if (!keys.includes(k)) keys.push(k);
+    });
+  }
+  tmp += "<tr>";
+  for (let i = 0; i < keys.length; ++i) {
+    tmp += "<th>" + keys[i] + "</th>";
+  }
+  tmp += "</tr>";
+  let fields = keys.map(function(k) { return k.split('.'); });
+  for (let j = 0; j < arr.length; ++j) {
+    let row = arr[j];
+    tmp += "<tr>";
+    for (let i = 0; i < fields.length; ++i) {
+      let v = row;
+      for (let k = 0; k < fields[i].length; ++k) {
+        if (typeof v !== 'object') break;
+        v = v[fields[i][k]];
+        if (v == null) break;
+      }
+      tmp += "<td>" + v + "</td>";
+    }
+    tmp += "</tr>";
+  }
+
+  return tmp;
+};
+
+let _make = function(obj, nest, opt) {
+  opt = opt || {};
+  if (obj == null) {
+    return "<td class='val noval'>(null)"
+         + '<input class="place" size=100 value="data'
+         + nest
+         + '" onclick="this.select();" />'
+         + "</td>";
+
+  } else if (typeof obj == 'object' && typeof obj.length === "number") {
+    if (opt.isTable) {
+      return _makeTable(obj);
+    } else {
+      let tmp = "<td class='val array'>"
+              + _makeType(obj)
+              + "&nbsp;[<span class='array-close' style='display:none'>...] "
+              + obj.length
+              + " items</span>"
+              + "</td><tr><td colspan='2'><table class='indent'>";
+      for (o in obj) {
+          if (/^\d+$/.test(o)) { o = +o; }
+          tmp += "<tr><th class='key'>"
+               + o
+               + "</th>" 
+               + _make(obj[o], nest + "[" + o + "]");
+      }
+      return tmp + "</table></td>";
+    }
+  } else if (typeof obj == 'object') {
+    let keys = Object.keys(obj);
+    let tmp = "<td class='val array'>"
+            + _makeType(obj)
+            + "&nbsp;{<span class='array-close' style='display:none'>...} "
+            + keys.length
+            + " keys</span>"
+            + "</td><tr><td colspan='2'><table class='indent'>";
+    for (let i = 0; i < keys.length; ++i) {
+      let key = keys[i];
+      tmp += "<tr><th class='key'>"
+           + key
+           + "</th>" 
+           + _make(obj[key], nest + "['" + key + "']", opt)
+           + "</tr>";
+    }
+    return tmp + "</table></td>";
+  } else {
+    return "<td class='val'>"
+         + _makeType(obj)
+         + _escape(obj)
+         + '<input class="place" size=100 value="data'
+         + nest
+         + '" onclick="this.select();" />'
+         + "</td>";
+  }
+}
+
+let _escape = function(ch) {
+  if (typeof ch !== 'string') return ch;
+  ch = ch.replace(/&/g,"&amp;") ;
+  ch = ch.replace(/"/g,"&quot;") ;
+  ch = ch.replace(/'/g,"&#039;") ;
+  ch = ch.replace(/</g,"&lt;") ;
+  ch = ch.replace(/>/g,"&gt;") ;
+  return ch ;
+};
+
+$on($doc, 'DOMContentLoaded', function() {
+  refreshTab();
+});
+</script>
+</body>
+</html>
